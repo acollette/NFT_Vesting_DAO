@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
+
     constructor() ERC721("VestingNFT", "VNFT") {
         /**
         @dev set the royalty percentage(5%) 
@@ -91,6 +92,10 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         _;
     }
 
+     /**
+    @notice Mints the NFT
+     */
+
     function mint(uint256 _mintAmount) public payable {
         uint256 supply = totalSupply();
         require(_mintAmount > 0);
@@ -137,6 +142,9 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         total = current + nestingTotal[tokenId];
     }
 
+     /**
+    @notice returns true if the token is nesting
+     */
     function checkIfNesting(uint256 tokenId)
         public
         view
@@ -151,7 +159,6 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
     function toggleNesting(uint256 tokenId)
         external
         tokenOwner(tokenId)
-    /** onlyApprovedOrOwner(tokenId) change to onlyOwner*/
     {
         uint256 start = nestingStarted[tokenId];
         if (start == 0) {
@@ -166,19 +173,28 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         }
     }
 
+    /**
+    @notice Changes the Token's nesting status.
+    */
     function resetAllNesting() external onlyOwner {
         for (uint256 i; i < totalSupply(); i++) {
             uint256 currentTokenId = tokenByIndex(i);
             nestingStarted[currentTokenId] = 0;
         }
     }
-
+    
+     /**
+    @notice returns the claimable reward per token ID
+     */
     function claimableReward(uint256 tokenId) external view returns (uint256) {
         require(claimablePerTokenId[tokenId] != 0, "Nothing to claim");
         uint256 reward = claimablePerTokenId[tokenId];
         return reward;
     }
 
+    /**
+    @dev claim function, will check claimableReward and send the funds to the token owner
+     */
     function claimReward(uint256 tokenId)
         external
         payable
@@ -195,6 +211,11 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
 
         return reward;
     }
+
+    /**
+    @dev will transfer part of the treauryFund (input amount) to the rewardsFund (that are claimable).
+    A snapshot is taken at time of transfer and claimable rewards are calculated based on time of staking.
+     */
 
     function transferRewardsFund(uint256 _rewardsTransfer)
         external
@@ -253,6 +274,9 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         nestingTransfer = 1;
     }
 
+    /**
+    @notice Set royalty percentage
+    */
     function setRoyaltyInfo(address _receiver, uint96 _feeNumerator)
         public
         onlyOwner
@@ -275,6 +299,9 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
+     /**
+    @dev Returns true if this contract implements the interface defined by interfaceId
+    */
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -292,6 +319,9 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
         super._resetTokenRoyalty(tokenId);
     }
 
+    /**
+    @dev enables a withdraw of contract's funds to the owner of the contract.
+    */
     function withdraw() public payable onlyOwner {
         (bool success, ) = payable(owner()).call{value: address(this).balance}(
             ""
