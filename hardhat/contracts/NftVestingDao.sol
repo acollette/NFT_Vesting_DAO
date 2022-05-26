@@ -5,7 +5,6 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
 
@@ -95,7 +94,6 @@ contract NftVestingDao is ERC721Enumerable, ERC721Royalty, Ownable {
      /**
     @notice Mints the NFT
      */
-
     function mint(uint256 _mintAmount) public payable {
         uint256 supply = totalSupply();
         require(_mintAmount > 0);
